@@ -1,0 +1,14 @@
+{
+    "version": "0.1",
+    "requires" : ["biothings", "mygene", "requests", "bs4"],
+    "dumper": {
+        "data_url": "http://data.wikipathways.org/current/gmt/wikipathways-20201010-gmt-Homo_sapiens.gmt"
+        "uncompress": false,
+        "release": "version:get_release",
+        "schedule" : "0 5 * * 1"
+    },
+    "uploader" : {
+        "parser": "go_parser:load_data",
+        "on_duplicates": "error"
+    }
+}
