@@ -19,16 +19,15 @@ def load_data(data_folder):
             species = header[3]
             # Get URL and gene list
             url = rec[1]
-            genes = rec[2:]
+            ncbigenes = rec[2:]
+            genes = [{"ncbigene": gene} for gene in ncbigenes]
             # Format schema
             doc = {'_id': _id,
-                   'date': date.today().strftime("%B %d, %Y"),
+                   'date': date.today().isoformat(),
                    'creator': 'Ricardo Avila',
                    'is_public': True,
                    'species': species,
-                   'genes': {
-                       "NCBIgene": genes
-                       },
+                   'genes': genes,
                    'wikipathways': {
                        'pathway_name': name,
                        'version': version,
