@@ -1,2 +1,2 @@
-from parser import load_data
-from dump import WikiPathwaysDumper
+from .upload import WikiPathwaysUploader
+from .dump import WikiPathwaysDumper
