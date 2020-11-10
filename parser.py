@@ -23,8 +23,6 @@ def load_data(data_folder):
             genes = [{"ncbigene": gene} for gene in ncbigenes]
             # Format schema
             doc = {'_id': _id,
-                   'date': date.today().isoformat(),
-                   'creator': 'Ricardo Avila',
                    'is_public': True,
                    'species': species,
                    'genes': genes,
