@@ -21,12 +21,17 @@ class WikiPathwaysDumper(HTTPDumper):
         home = self.client.get(self.__class__.BASE_URL)
         html = bs4.BeautifulSoup(home.text, "html.parser")
         # Grab the date string from the text of the first link element
-        link = html.find('a')
-        release_str = link.contents[0].split("-")
-        assert release_str[0] == "wikipathways", "First element should be 'wikipathways': %s" % release_str
-        version = release_str[1]
-        assert len(version) == 8, "Version number should be 8 characters long: %s" % version
-        return version
+        table = html.find('table')
+        link = table.find('a')
+        if link is None:
+            self.logger.error("No links found in source.")
+        else:
+            release_str = link.contents[0].split("-")
+            assert release_str[0] == "wikipathways", "Source link should start with 'wikipathways': %s" % release_str
+            version = release_str[1]
+            assert len(version) == 8, "Version number should be 8 characters long: %s" % version
+            return version
+
 
     def create_todump_list(self, force=False):
         self.release = self.get_remote_version()
@@ -36,7 +41,7 @@ class WikiPathwaysDumper(HTTPDumper):
             for tr_tag in html.find_all('tr'):
                 a_tag = tr_tag.find('a')
                 if a_tag is not None:
-                    url = a_tag.attrs['href']
                     name = a_tag.contents[0]
+                    url = self.__class__.BASE_URL + name
                     local_file = os.path.join(self.new_data_folder, name)
                     self.to_dump.append({"remote": url, "local":local_file})
