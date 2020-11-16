@@ -13,7 +13,7 @@ class WikiPathwaysDumper(HTTPDumper):
     SRC_NAME = "wikipathways"
     SRC_ROOT_FOLDER = os.path.join(DATA_ARCHIVE_ROOT, SRC_NAME)
     BASE_URL = "http://data.wikipathways.org/current/gmt/"
-    SCHEDULE = "0 6 * * *"
+    SCHEDULE = "0 0 0 15 *"
 
     def get_remote_version(self):
         home = self.client.get(self.__class__.BASE_URL)
