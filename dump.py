@@ -27,9 +27,11 @@ class WikiPathwaysDumper(HTTPDumper):
             self.logger.error("No links found in source.")
         else:
             release_str = link.contents[0].split("-")
-            assert release_str[0] == "wikipathways", "Source link should start with 'wikipathways': %s" % release_str
+            assert release_str[0] == "wikipathways", \
+                    "Source link should start with 'wikipathways': %s" % release_str
             version = release_str[1]
-            assert len(version) == 8, "Version number should be 8 characters long: %s" % version
+            assert len(version) == 8, \
+                    "Version number should be 8 characters long: %s" % version
             return version
 
 
