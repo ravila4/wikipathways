@@ -1,5 +1,4 @@
-import os, sys, time, datetime
-import json
+import os
 import bs4
 
 import biothings, config
@@ -7,7 +6,6 @@ biothings.config_for_app(config)
 
 from config import DATA_ARCHIVE_ROOT
 from biothings.hub.dataload.dumper import HTTPDumper
-from biothings.utils.common import unzipall
 
 
 class WikiPathwaysDumper(HTTPDumper):
@@ -28,12 +26,11 @@ class WikiPathwaysDumper(HTTPDumper):
         else:
             release_str = link.contents[0].split("-")
             assert release_str[0] == "wikipathways", \
-                    "Source link should start with 'wikipathways': %s" % release_str
+                "Source link should start with 'wikipathways': %s" % release_str
             version = release_str[1]
             assert len(version) == 8, \
-                    "Version number should be 8 characters long: %s" % version
+                "Version number should be 8 characters long: %s" % version
             return version
-
 
     def create_todump_list(self, force=False):
         self.release = self.get_remote_version()
@@ -46,4 +43,4 @@ class WikiPathwaysDumper(HTTPDumper):
                     name = a_tag.contents[0]
                     url = self.__class__.BASE_URL + name
                     local_file = os.path.join(self.new_data_folder, name)
-                    self.to_dump.append({"remote": url, "local":local_file})
+                    self.to_dump.append({"remote": url, "local": local_file})
