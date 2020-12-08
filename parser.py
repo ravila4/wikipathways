@@ -1,8 +1,5 @@
 import glob
-import logging
 import os
-import requests
-import urllib.parse
 
 from biothings.utils.dataload import tabfile_feeder
 from .id_lookup import QueryManager
