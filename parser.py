@@ -2,7 +2,7 @@ import glob
 import os
 
 from biothings.utils.dataload import tabfile_feeder
-from .id_lookup import QueryManager
+from .geneset_utils import IDLookup
 
 
 def load_data(data_folder):
@@ -36,8 +36,8 @@ def load_data(data_folder):
         for rec in data:
             all_genes += rec[2:]
         all_genes = set(all_genes)
-        converter = QueryManager(all_genes, 'entrezgene', taxid)
-        converter.query_mygene()
+        lookup = IDLookup(taxid)
+        lookup.query_mygene(all_genes, 'entrezgene')
 
         # Parse each individual document
         data = tabfile_feeder(f, header=0)
