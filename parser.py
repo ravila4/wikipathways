@@ -5,7 +5,7 @@ import requests
 import urllib.parse
 
 from biothings.utils.dataload import tabfile_feeder
-from id_lookup import QueryManager
+from .id_lookup import QueryManager
 
 
 def load_data(data_folder):
