@@ -1,69 +1,49 @@
 import glob
+import logging
 import os
 import requests
 import urllib.parse
-import logging
 
 from biothings.utils.dataload import tabfile_feeder
-import mygene
+from id_lookup import QueryManager
 
 
 def load_data(data_folder):
 
     def get_taxid(species):
-        """Fetch taxonomic ID given a scientific name."""
-        s = urllib.parse.quote(species)
-        url = ('http://t.biothings.io/v1/query?q={}&fields=taxid&limit=1'
-               .format(s))
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            taxid = data['hits'][0]['taxid']
-            return taxid
-
-    def fetch_gene_ids(ncbi_ids, taxid):
-        """Given entrez (ncbi) ids, fetch ensembl, gene symbol, name and _id."""
-        genes = []
-        # Check if genes are already in cache
-        for i in ncbi_ids:
-            if i in gene_cache.keys():
-                genes.append(gene_cache[i])
-                ncbi_ids.remove(i)
-        # Fetch genes from mygene.info
-        mg = mygene.MyGeneInfo()
-        fields = "ensembl.gene,symbol,name"
-        response = mg.querymany(ncbi_ids, scopes='entrezgene',
-                                species=taxid, fields=fields, returnall=True)
-        for out in response['out']:
-            query = out['query']
-            if out.get('notfound'):
-                logging.warn(
-                        "NCBI ids with no hits may be deprecated, skipping.")
-                continue
-            gene = {'mygene_id': out['_id'],
-                    'ncbigene': query,
-                    'symbol': out['symbol'],
-                    'name': out['name']
-                    }
-            if out.get('ensembl') is not None:
-                if len(out['ensembl']) > 1:
-                    for i in out['ensembl']:
-                        gene.setdefault('ensemblgene', []).append(i['gene'])
-                else:
-                    gene['ensemblgene'] = out['ensembl']['gene']
-            genes.append(gene)
-            # Add to cache
-            gene_cache[query] = gene
-        return genes
+        taxids = {"Mus musculus": 10090,
+                  "Bos taurus": 9913,
+                  "Homo sapiens": 9606,
+                  "Anopheles gambiae": 180454,
+                  "Arabidopsis thaliana": 3702,
+                  "Caenorhabditis elegans": 6239,
+                  "Canis familiaris": 9615,
+                  "Danio rerio": 7955,
+                  "Drosophila melanogaster": 7227,
+                  "Gallus gallus": 9031,
+                  "Oryza sativa": 39947,
+                  "Pan troglodytes": 9598,
+                  "Rattus norvegicus": 10116,
+                  "Saccharomyces cerevisiae": 559292}
+        return taxids[species]
 
     # Load .gmt (Gene Matrix Transposed) files
     for f in glob.glob(os.path.join(data_folder, "*.gmt")):
         # Get species name from the filename and convert to taxid
         species = f.replace(".gmt", "").split("-")[-1].replace("_", " ")
         taxid = get_taxid(species)
+        print("Parsing data for {} ({})".format(species, taxid))
+        # Read entire file and fetch data for joint set of all genes
         data = tabfile_feeder(f, header=0)
-        # Initialize cache for gene data
-        gene_cache = {}
+        all_genes = []
+        for rec in data:
+            all_genes += rec[2:]
+        all_genes = set(all_genes)
+        converter = QueryManager(all_genes, 'entrezgene', taxid)
+        converter.query_mygene()
+
+        # Parse each individual document
+        data = tabfile_feeder(f, header=0)
         for rec in data:
             header = rec[0].split("%")
             # Get fields from header
@@ -73,7 +53,11 @@ def load_data(data_folder):
             # Get URL and gene list
             url = rec[1]
             ncbigenes = rec[2:]
-            genes = fetch_gene_ids(ncbigenes, taxid)
+            genes = []
+            for g in ncbigenes:
+                if converter.query_cache.get(g):
+                    genes.append(converter.query_cache[g])
+
             # Format schema
             doc = {'_id': wikipathways_id,
                    'is_public': True,
@@ -92,5 +76,6 @@ if __name__ == "__main__":
     import json
 
     annotations = load_data("./test_data")
-    for a in annotations:
-        print(json.dumps(a, indent=2))
+    with open("out.json", 'a') as outfile:
+        for a in annotations:
+            outfile.write(json.dumps(a, indent=2))
