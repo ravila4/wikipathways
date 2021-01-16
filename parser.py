@@ -17,11 +17,14 @@ def load_data(data_folder):
                   "Canis familiaris": 9615,
                   "Danio rerio": 7955,
                   "Drosophila melanogaster": 7227,
+                  "Equus caballus": 9796,
                   "Gallus gallus": 9031,
                   "Oryza sativa": 39947,
                   "Pan troglodytes": 9598,
                   "Rattus norvegicus": 10116,
-                  "Saccharomyces cerevisiae": 559292}
+                  "Saccharomyces cerevisiae": 559292,
+                  "Populus trichocarpa": 3694,
+                  "Sus scrofa": 9823}
         return taxids[species]
 
     # Load .gmt (Gene Matrix Transposed) files
